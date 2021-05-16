@@ -13,19 +13,19 @@ def index():
 
 @app.route('/nba-api/describe')
 def nba_describe():
-    nba = pd.read_csv("../raw-data/nba_all_elo.csv")
+    nba = pd.read_csv("raw-data/nba_all_elo.csv")
     description = nba.describe()
     return description.to_json()
 
 @app.route('/nba-api/head')
 def nba_head():
-    nba = pd.read_csv("../raw-data/nba_all_elo.csv")
+    nba = pd.read_csv("raw-data/nba_all_elo.csv")
     head = nba.head()
     return head.to_json()\
 
 @app.route('/nba-api/head/<int:num_rows>', methods=['GET'])
 def nba_head_rows(num_rows):
-    nba = pd.read_csv("../raw-data/nba_all_elo.csv")
+    nba = pd.read_csv("raw-data/nba_all_elo.csv")
     head = nba.head(num_rows)
     return head.to_json()
 
@@ -60,3 +60,7 @@ def get_countries():
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error':'Not found'}), 404)
+
+if __name__ == '__main__':
+    # Threaded option to enable multiple instances for multiple user access support
+    app.run(threaded=True, port=5000)
