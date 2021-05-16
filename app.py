@@ -3,16 +3,29 @@ import pandas as pd
 
 app = Flask(__name__)
 
+tasks = [
+    {
+        'id': 1,
+        'title': 'Buy groceries',
+        'description': 'Milk, cheese, bananas',
+        'done': False
+    },{
+        'id': 2,
+        'title': 'Learn Python',
+        'description': 'Need to learn python to finish the project',
+        'done': False
+    }
+]
 
 @app.route('/')
 def index():
     return "Hello, World!"
 
-@app.route('/raw-data/describe')
-def raw_data():
-    nba = pd.read_csv("data/nba_all_elo.csv")
-    info = nba.describe()
-    return info.to_json()
+@app.route('/todo/api/tasks', methods=['GET'])
+def get_tasks():
+    return jsonify({'tasks': tasks})
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
