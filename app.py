@@ -1,46 +1,11 @@
+import io
+
 from flask import Flask, jsonify, abort, make_response
-import flask.scaffold
+import requests
+
 import pandas as pd
-flask.helpers._endpoint_from_view_func = flask.scaffold._endpoint_from_view_func
-from flask_restful import Api, Resource, fields
+
 app = Flask(__name__)
-
-api = Api(app)
-
-tasks = [
-    {
-        'id': 1,
-        'title': 'Buy groceries',
-        'description': 'Milk, cheese, bananas',
-        'done': False
-    },
-    {
-        'id': 2,
-        'title': 'Learn Python',
-        'description': 'Need to learn python to finish the project',
-        'done': False
-    }
-]
-
-class TaskListAPI(Resource):
-    def get(self):
-        return {'tasks': tasks}
-    def put(self):
-        pass
-
-class TaskAPI(Resource):
-    def get(self, id):
-        task = [task for task in tasks if task['id'] == id]
-        if len(task) == 0:
-            abort(404)
-        return {'task': task[0]}
-    def put(self, id):
-        pass
-    def delete(self, id):
-        pass
-
-api.add_resource(TaskListAPI, '/todo/api/v2/tasks')
-api.add_resource(TaskAPI, '/todo/api/v2/tasks/<int:id>')
 
 @app.route('/')
 def index():
@@ -64,6 +29,33 @@ def nba_head_rows(num_rows):
     head = nba.head(num_rows)
     return head.to_json()
 
+@app.route('/country-api/countries')
+def get_countries():
+    csv_url = "https://raw.githubusercontent.com/cs109/2014_data/master/countries.csv"
+    try:
+        url_content = requests.get(csv_url).content # stream
+        # In-memory text streams are also available as StringIO objects
+        csv_data = pd.read_csv(io.StringIO(url_content.decode('utf-8')))
+
+        # Option 1
+        # raw_json_data = csv_data.to_json(orient='records')
+        # return raw_json_data
+
+        # Option 2
+        row_count = csv_data.shape[0]
+        column_count = csv_data.shape[1]
+        column_names = csv_data.columns.tolist()
+
+        final_row_data = []
+        for index, rows in csv_data.iterrows():
+            final_row_data.append(rows.to_dict())
+
+        json_result = {'rows': row_count, 'cols': column_count, 'colums': column_names, 'rowData': final_row_data}
+        return json_result
+
+    except Exception as inst:
+        print(type(inst))
+        abort(404)
 
 @app.errorhandler(404)
 def not_found(error):
