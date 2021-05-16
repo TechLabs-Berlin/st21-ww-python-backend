@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, abort, make_response
 import flask.scaffold
+import pandas as pd
 flask.helpers._endpoint_from_view_func = flask.scaffold._endpoint_from_view_func
 from flask_restful import Api, Resource, fields
 app = Flask(__name__)
@@ -41,13 +42,33 @@ class TaskAPI(Resource):
 api.add_resource(TaskListAPI, '/todo/api/v2/tasks')
 api.add_resource(TaskAPI, '/todo/api/v2/tasks/<int:id>')
 
+@app.route('/')
+def index():
+    return "Hello, World!"
+
+@app.route('/nba-api/describe')
+def nba_describe():
+    nba = pd.read_csv("raw-data/nba_all_elo.csv")
+    description = nba.describe()
+    return description.to_json()
+
+@app.route('/nba-api/head')
+def nba_head():
+    nba = pd.read_csv("raw-data/nba_all_elo.csv")
+    head = nba.head()
+    return head.to_json()\
+
+@app.route('/nba-api/head/<int:num_rows>', methods=['GET'])
+def nba_head_rows(num_rows):
+    nba = pd.read_csv("raw-data/nba_all_elo.csv")
+    head = nba.head(num_rows)
+    return head.to_json()
+
+
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error':'Not found'}), 404)
 
-@app.route('/')
-def index():
-    return "Hello, World!"
 
 if __name__ == '__main__':
     app.run(debug=True)
